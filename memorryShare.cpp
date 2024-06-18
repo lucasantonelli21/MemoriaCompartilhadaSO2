@@ -34,6 +34,8 @@ void insereABP (TNoABP **r, int key);
 int achaMaiorEsq(TNoABP **no1);
 void removeABP (TNoABP **r, int key);
 void printABP (TNoABP *raiz);
+void recebeMSG(TNoABP **raiz, int cont);
+TNoABP retornarMenor(TNoABP **raiz,int index);
 
 
 
@@ -57,8 +59,6 @@ int main(){
         generator(numbers);
     }else{
         sleep(3);
-        for(int i=0;i<STACK_SIZE;i++)
-            printf("%d\n",numbers[i]);
         consume(&tree,numbers);
     }
 }
@@ -67,7 +67,7 @@ int main(){
 void insert(int numbers[STACK_SIZE], int value,int index){   
     if(numbers[index]==0){
         numbers[index]=value;
-        printf("\nStacked %d in %d\n",value,index);
+        //printf("\nStacked %d in %d\n",value,index);
     }
     
 }
@@ -75,13 +75,15 @@ void insert(int numbers[STACK_SIZE], int value,int index){
 void drop(TNoABP **tree,int numbers[STACK_SIZE]){
     int value;
     int i=STACK_SIZE-1;
+    int cont = 0;
     while(true){
         if(i>-1){
             if(numbers[i]!=0){
                 //value = numbers[i];
                 //printf("\nDroped %d from the stack",value);
                 insereABP(tree,numbers[i]);
-                printf("\nInserted %d in the tree ",numbers[i]);
+                cont++;
+                //printf("\nInserted %d in the tree ",numbers[i]);
                 numbers[i] = 0;
                 i--;
             }else{
@@ -89,6 +91,7 @@ void drop(TNoABP **tree,int numbers[STACK_SIZE]){
             }
         }else{
             i=STACK_SIZE-1;
+            recebeMSG(tree,cont);
         }
     }
     //printABP(*tree);
@@ -133,6 +136,8 @@ void generator(int numbers[STACK_SIZE]){
         }else{
             while(numbers[0]!=0);
             sleep(10);
+            for(int i=0;i<STACK_SIZE;i++)
+                numberInserteds[i]=0;
             cont=0;
             //printf("oi");
         }
@@ -234,4 +239,50 @@ void printABP (TNoABP *raiz) //travessia em ordem
     printABP (raiz->esq);
     printf("\n%d", raiz->chave);
     printABP (raiz->dir);
+}
+
+
+void recebeMSG(TNoABP **raiz, int cont){
+    //while(true){
+        int start;
+        FILE *fptr;
+        int ready=0;
+        while(ready!=1){
+            fptr=fopen("request.txt","r");
+            if(fptr==NULL){
+                printf("ERRO");
+                exit(1);
+            }
+            fscanf(fptr,"%d",&ready);
+            sleep(3);
+            fclose(fptr);
+        }
+        fptr=fopen("response.txt","w");
+        TNoABP no = retornarMenor(raiz,cont);
+        int primo = no.chave;
+        removeABP(raiz,primo);
+        fprintf(fptr,"%d",primo);
+        fclose(fptr);
+        fptr=fopen("request.txt","w");
+        fclose(fptr);
+
+        //break;
+    //}
+}   
+
+
+TNoABP retornarMenor(TNoABP **raiz,int index){
+    
+    TNoABP *aux = (*raiz);
+    
+    for(int i=1;i<index;i++){
+        if(aux->esq==NULL)
+            return (*aux);
+        if(aux->chave<aux->esq->chave){
+            return (*aux);
+        }else{
+            aux=(*raiz)->esq;
+        }
+
+    }
 }
